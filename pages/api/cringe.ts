@@ -1,37 +1,77 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { Configuration, OpenAIApi } from 'openai';
+import Head from 'next/head'
+import Image from 'next/image'
+import styles from '@/styles/Home.module.css'
+import mainImage from '@/assets/images/main_image.jpg'
+import { Form, Button, Spinner } from 'react-bootstrap'
+import { FormEvent, useState } from 'react'
 
-const config = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+export default function Home() {
 
-const openai = new OpenAIApi(config);
+  const [quote, setQuote] = useState("");
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteLoadingError, setQuoteLoadingError] = useState(false);
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const prompt = req.query.prompt;
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt missing' });
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const prompt = formData.get("prompt")?.toString().trim();
+
+    if (prompt) {
+      try {
+        setQuote("");
+        setQuoteLoadingError(false);
+        setQuoteLoading(true);
+
+        const response = await fetch("/api/cringe?prompt=" + encodeURIComponent(prompt));
+        const body = await response.json();
+        setQuote(body.quote);
+      } catch (error) {
+        console.error(error);
+        setQuoteLoadingError(true);
+      } finally {
+        setQuoteLoading(false);
+      }
+    }
   }
-  if (prompt!.length > 100) {
-    return res.status(400).json({ error: 'Prompt too long' });
-  }
 
-  const completion = await openai.createCompletion({
-    model: 'text-devinci-003',
-    prompt: `Create a cringy motivational quote based on the following topic.\n
-    Topic: ${prompt}\n
-    Cringy motivational quote:`,
-    max_tokens: 500,
-    temperature: 1,
-    presence_penalty: 0,
-    frequency_penalty: 0,
-  });
-
-  const quote = completion.data.choices[0].text;
-
-  res.status(200).json({ quote });
+  return (
+    <>
+      <Head>
+        <title>Cringe AI - Create cringy motivational quotes</title>
+        <meta name="description" content="by Coding in Flow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className={styles.main}>
+        <h1>Cringe AI</h1>
+        <h2>powered by GPT-3</h2>
+        <div>Enter a topic and the AI will generate a super cringy motivational quote</div>
+        <div className={styles.mainImageContainer}>
+          <Image
+            src={mainImage}
+            fill
+            alt='A picture of a woman holding both her hands in front of her face'
+            priority
+            className={styles.mainImage}
+          />
+        </div>
+        <Form onSubmit={handleSubmit} className={styles.inputForm}>
+          <Form.Group className='mb-3' controlId='prompt-input'>
+            <Form.Label>Create a cringy quote about...</Form.Label>
+            <Form.Control
+              name='prompt'
+              placeholder='e.g. success, fear, potatoes'
+              maxLength={100}
+            />
+          </Form.Group>
+          <Button type='submit' className='mb-3' disabled={quoteLoading}>
+            Make me cringe
+          </Button>
+        </Form>
+        {quoteLoading && <Spinner animation='border' />}
+        {quoteLoadingError && "Something went wrong. Please try again."}
+        {quote && <h5>{quote}</h5>}
+      </main>
+    </>
+  )
 }
