@@ -21,6 +21,7 @@ export default async function handler(
   if (prompt.length > 100) {
     return res.status(400).json({ error: 'Prompt too long' });
   }
+  console.log(prompt);
 
   const completion = await openai.createCompletion({
     model: 'text-davinci-003',
