@@ -9,6 +9,7 @@ export default function Home() {
   const [quote, setQuote] = useState('');
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteLoadingError, setQuoteLoadingError] = useState(false);
+  // const [inputValue, setInputValue] = useState('');
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,6 +48,7 @@ export default function Home() {
           const chunkValue = decoder.decode(value);
           setQuote((prev) => prev + chunkValue);
         }
+        // setInputValue('');
       } catch (error) {
         console.error(error);
         setQuoteLoadingError(true);
@@ -86,6 +88,7 @@ export default function Home() {
               name='prompt'
               placeholder='你好啊，恶魔少女...'
               maxLength={100}
+              // value={inputValue}
             />
           </Form.Group>
           <Button type='submit' className='mb-3' disabled={quoteLoading}>
