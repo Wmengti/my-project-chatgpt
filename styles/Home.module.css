@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 600px;
+  max-width: 720px;
   margin: auto;
   padding: 4rem 1rem;
   text-align: center;
@@ -11,8 +11,8 @@
 .mainImageContainer {
   position: relative;
   margin: 2rem 0;
-  width: 100%;
-  aspect-ratio: 12/7;
+  width: 50%;
+  aspect-ratio: 1;
 }
 
 .mainImage {
