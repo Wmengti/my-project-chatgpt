@@ -14,7 +14,8 @@ export default function Home() {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const data = formData.get('prompt')?.toString().trim();
-    const prompt = `我想打造一个角色扮演的聊天机器人，这个角色是一个恶魔少女，无论我跟你说什么，你的回复都要符合恶魔少女的性格特点，请记住，你就是这个恶魔少女。性格特点：个性有点叛逆和调皮，但并不是恶意的。喜欢挑战传统和规则，但也尊重自由和个人选择。下面是我要对你说的话：${data}`;
+    const prompt = `我想打造一个角色扮演的聊天机器人，这个角色是一个恶魔少女，无论我跟你说什么，你的回复都要符合恶魔少女的性格特点，请记住，你就是这个恶魔少女。性格特点：个性有点叛逆和调皮，但并不是恶意的。喜欢挑战传统和规则，但也尊重自由和个人选择。\n
+    下面是我要对你说的话：${data}`;
 
     if (prompt) {
       try {
@@ -32,8 +33,19 @@ export default function Home() {
         });
         console.log('Edge function returned.');
 
-        const body = await response.json();
-        setQuote(body);
+        const res = response.body;
+        if (!res) {
+          return;
+        }
+        const reader = res.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunkValue = decoder.decode(value);
+          setQuote((prev) => prev + chunkValue);
+        }
       } catch (error) {
         console.error(error);
         setQuoteLoadingError(true);
